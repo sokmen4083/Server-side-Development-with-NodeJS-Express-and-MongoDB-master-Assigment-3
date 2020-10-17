@@ -6,6 +6,9 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
+var passport = require('passport');
+var authenticate = require('./authenticate');
+
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -19,8 +22,7 @@ mongoose.Promise = require('bluebird');
 
 const Dishes = require('./models/dishes');
 
-var passport = require('passport');
-var authenticate = require('./authenticate');
+
 
 // Connection URL
 const url = config.mongoUrl;
@@ -35,9 +37,19 @@ connect.then((db) => {
 
 var app = express();
 
+// Secure traffic only
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  }
+  else {
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
+  }
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
